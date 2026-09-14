@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  Platform,
 } from 'react-native';
 import {
   getSystemStatus,
@@ -17,8 +18,21 @@ import { ControlDashboard } from './src/components/ControlDashboard';
 import { SpectrumVisualizer } from './src/components/SpectrumVisualizer';
 import { SettingsPanel } from './src/components/SettingsPanel';
 
+// Default mock state for demo visualization when offline/unconnected
+const DEFAULT_DEMO_STATUS = {
+  isJamming: true,
+  jammerMode: 0,
+  dwellTimeUs: 300,
+  paLevel: 3,
+  loopsPerSec: 5320,
+  currentAdvCh: 26,
+  currentDataCh: 14,
+  radio1OK: true,
+  radio2OK: true,
+};
+
 export default function App() {
-  const [status, setStatus] = useState(null);
+  const [status, setStatus] = useState(DEFAULT_DEMO_STATUS);
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'spectrum' | 'settings'
   const [isConnected, setIsConnected] = useState(false);
 
@@ -38,7 +52,7 @@ export default function App() {
     };
 
     poll();
-    const interval = setInterval(poll, 1000);
+    const interval = setInterval(poll, 1200);
     return () => {
       isMounted = false;
       clearInterval(interval);
@@ -46,23 +60,39 @@ export default function App() {
   }, []);
 
   const handleToggleJamming = async () => {
-    const res = await sendControlCommand('toggle');
-    if (res) setStatus(res);
+    if (isConnected) {
+      const res = await sendControlCommand('toggle');
+      if (res) setStatus(res);
+    } else {
+      setStatus((prev) => ({ ...prev, isJamming: !prev.isJamming }));
+    }
   };
 
   const handleSelectMode = async (modeId) => {
-    const res = await sendControlCommand('start', modeId);
-    if (res) setStatus(res);
+    if (isConnected) {
+      const res = await sendControlCommand('start', modeId);
+      if (res) setStatus(res);
+    } else {
+      setStatus((prev) => ({ ...prev, jammerMode: modeId }));
+    }
   };
 
   const handleEmergencyStop = async () => {
-    const res = await sendControlCommand('stop');
-    if (res) setStatus(res);
+    if (isConnected) {
+      const res = await sendControlCommand('stop');
+      if (res) setStatus(res);
+    } else {
+      setStatus((prev) => ({ ...prev, isJamming: false }));
+    }
   };
 
   const handleUpdateSettings = async (dwell, pa) => {
-    const res = await updateSettings(dwell, pa);
-    if (res) setStatus(res);
+    if (isConnected) {
+      const res = await updateSettings(dwell, pa);
+      if (res) setStatus(res);
+    } else {
+      setStatus((prev) => ({ ...prev, dwellTimeUs: dwell, paLevel: pa }));
+    }
   };
 
   return (
@@ -71,7 +101,7 @@ export default function App() {
 
       {/* Header Bar */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>🛡️ ANTI-JAMMER CONTROL</Text>
+        <Text style={styles.headerTitle}>🛡️ WiSARD CONTROL</Text>
         <View
           style={[
             styles.connBadge,
@@ -81,17 +111,17 @@ export default function App() {
           <View
             style={[
               styles.connDot,
-              { backgroundColor: isConnected ? '#10b981' : '#ef4444' },
+              { backgroundColor: isConnected ? '#10b981' : '#f59e0b' },
             ]}
           />
           <Text style={styles.connText}>
-            {isConnected ? 'ESP32 CONNECTED' : 'OFFLINE (192.168.4.1)'}
+            {isConnected ? 'ESP32 CONNECTED' : 'DEMO MODE (OFFLINE)'}
           </Text>
         </View>
       </View>
 
       {/* Main Content Area */}
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
         {activeTab === 'dashboard' && (
           <ControlDashboard
             status={status}
@@ -154,13 +184,17 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#0f172a',
+    ...(Platform.OS === 'web' && {
+      height: '100vh',
+      minHeight: '100vh',
+    }),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     backgroundColor: '#1e293b',
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
@@ -174,7 +208,7 @@ const styles = StyleSheet.create({
   connBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
@@ -182,21 +216,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#064e3b',
   },
   connOffline: {
-    backgroundColor: '#7f1d1d',
+    backgroundColor: '#78350f',
   },
   connDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     marginRight: 6,
   },
   connText: {
     color: '#f8fafc',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
   },
   navBar: {
     flexDirection: 'row',
@@ -227,3 +264,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

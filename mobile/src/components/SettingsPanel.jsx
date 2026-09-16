@@ -5,20 +5,19 @@ export const SettingsPanel = ({ status, onUpdateSettings }) => {
   const currentDwell = status?.dwellTimeUs ?? 300;
   const currentPa = status?.paLevel ?? 3;
 
-  const dwellOptions = [100, 300, 500, 1000];
+  const dwellOptions = [100, 250, 500, 750, 1000];
   const paOptions = [
-    { level: 0, label: 'MIN (0dBm)' },
-    { level: 1, label: 'LOW (-6dBm)' },
-    { level: 2, label: 'HIGH (0dBm)' },
-    { level: 3, label: 'MAX (+20dBm)' },
+    { level: 0, label: 'MIN (0 dBm)' },
+    { level: 1, label: 'LOW (-6 dBm)' },
+    { level: 2, label: 'HIGH (0 dBm)' },
+    { level: 3, label: 'MAX (+20 dBm)' },
   ];
 
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Hardware Calibration & Settings</Text>
 
-      {/* Dwell Time Selection */}
-      <Text style={styles.label}>PLL Dwell Time per Channel (µs)</Text>
+      <Text style={styles.label}>PLL dwell time per channel (µs)</Text>
       <View style={styles.optionRow}>
         {dwellOptions.map((d) => (
           <TouchableOpacity
@@ -33,8 +32,7 @@ export const SettingsPanel = ({ status, onUpdateSettings }) => {
         ))}
       </View>
 
-      {/* RF PA Power Selection */}
-      <Text style={styles.label}>RF Output PA Power Level</Text>
+      <Text style={styles.label}>RF output power level</Text>
       <View style={styles.optionGrid}>
         {paOptions.map((p) => (
           <TouchableOpacity
@@ -49,13 +47,12 @@ export const SettingsPanel = ({ status, onUpdateSettings }) => {
         ))}
       </View>
 
-      {/* Wi-Fi SoftAP Connection Info */}
       <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>📶 Control Connection Info</Text>
+        <Text style={styles.infoTitle}>📶 Control connection info</Text>
         <Text style={styles.infoText}>SSID: AntiJammer-Control</Text>
         <Text style={styles.infoText}>Target IP: 192.168.4.1 (Port 80)</Text>
         <Text style={styles.infoSubtext}>
-          Ensure mobile device is connected to the ESP32 Wi-Fi SoftAP network.
+          Make sure the device is connected to the ESP32 Wi-Fi SoftAP network.
         </Text>
       </View>
     </View>
@@ -64,48 +61,54 @@ export const SettingsPanel = ({ status, onUpdateSettings }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#111827',
+    backgroundColor: 'rgba(255, 255, 255, 0.68)',
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#1f2937',
+    borderColor: '#e3dcef',
     marginVertical: 12,
+    shadowColor: '#9747ff',
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
   },
   sectionTitle: {
-    color: '#f9fafb',
+    color: '#ffffff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 12,
   },
   label: {
-    color: '#9ca3af',
-    fontSize: 13,
-    fontWeight: '600',
+    color: '#a78bbd',
+    fontSize: 12,
+    fontWeight: '700',
     marginTop: 8,
     marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
   },
   optionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 14,
+    gap: 6,
   },
   chip: {
-    flex: 0.23,
-    backgroundColor: '#1f2937',
+    flex: 1,
+    backgroundColor: 'rgba(246, 242, 255, 0.72)',
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: 'rgba(207, 160, 255, 0.18)',
   },
   chipActive: {
-    backgroundColor: '#2563eb',
-    borderColor: '#3b82f6',
+    backgroundColor: 'rgba(151, 71, 255, 0.2)',
+    borderColor: '#d8a7ff',
   },
   chipText: {
-    color: '#9ca3af',
-    fontSize: 12,
-    fontWeight: '600',
+    color: '#eee7f5',
+    fontSize: 11,
+    fontWeight: '700',
   },
   chipTextActive: {
     color: '#ffffff',
@@ -118,48 +121,49 @@ const styles = StyleSheet.create({
   },
   paCard: {
     width: '48%',
-    backgroundColor: '#1f2937',
+    backgroundColor: 'rgba(246, 242, 255, 0.72)',
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: 'rgba(125, 211, 252, 0.13)',
   },
   paCardActive: {
-    backgroundColor: '#059669',
-    borderColor: '#10b981',
+    backgroundColor: 'rgba(255, 49, 93, 0.16)',
+    borderColor: '#ff8aa1',
   },
   paText: {
-    color: '#9ca3af',
-    fontSize: 13,
+    color: '#eee7f5',
+    fontSize: 12,
     fontWeight: '600',
   },
   paTextActive: {
     color: '#ffffff',
   },
   infoCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'rgba(246, 242, 255, 0.72)',
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     marginTop: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6',
+    borderLeftColor: '#ff5577',
   },
   infoTitle: {
-    color: '#60a5fa',
-    fontWeight: 'bold',
+    color: '#d8a7ff',
+    fontWeight: '700',
     fontSize: 13,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   infoText: {
-    color: '#cbd5e1',
+    color: '#eee7f5',
     fontSize: 12,
+    marginTop: 2,
   },
   infoSubtext: {
-    color: '#64748b',
+    color: '#a78bbd',
     fontSize: 11,
-    marginTop: 4,
+    marginTop: 6,
     fontStyle: 'italic',
   },
 });

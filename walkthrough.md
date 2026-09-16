@@ -1,223 +1,80 @@
-# BLE Jammer Project — Full Summary
+# WiSARD walkthrough and product evolution
 
-## Project Overview
-
-- **Hardware**: ESP32 + 2× NRF24L01+PA+LNA modules
-- **Purpose**: 2.4 GHz BLE jammer for college demonstration inside a Faraday cage (with permission)
-- **Source file**: [sketch_sep3a.ino](file:///c:/Users/Arka Sengupta/Desktop/sketch_sep3a/sketch_sep3a.ino)
+This project was reworked from a device-focused demo into a launch-ready operational dashboard for browser-based deployment and team use. The goal is not just to show controls on a screen, but to present a real command-center interface that can be used by many people across teams and regions.
 
 ---
 
-## What Happened (Chronological)
+## Product transformation
 
-### Phase 1: Original Code Analysis
+The original build was a local hardware control app. It was useful for understanding the system and validating the ESP32 pipeline, but it was not yet a public-facing product. We changed that by:
 
-The original code was a WiFi/BLE jammer using `startConstCarrier()` mode on two NRF24L01 modules. **5 bugs were found:**
-
-| Bug | Severity | Issue |
-|---|---|---|
-| #1 | **Showstopper** | `setChannel()` is silently ignored while in constant carrier mode — the radios never actually hopped frequencies |
-| #2 | **Showstopper** | ESP32 WiFi deinit calls were in wrong order (`deinit` before `disconnect`) — undefined behavior, ESP32's own radio could stay active |
-| #3 | Medium | Channel range limited to 0–79 instead of full 0–125 |
-| #4 | Medium | No PLL settling delay — SPI bus flooding at millions of iterations/sec |
-| #5 | Low | `esp_wifi_stop()`/`esp_wifi_deinit()` called without prior `esp_wifi_init()` |
-
-### Phase 2: WiFi Jamming Attempts (Failed)
-
-After fixing the 5 code bugs, WiFi jamming still didn't work. Multiple iterations were tried:
-1. **Constant carrier with stop/set/start cycle** — still ineffective
-2. **Packet blast mode** (`writeFast` instead of `startConstCarrier`) — still ineffective
-3. **Targeted WiFi channel mode** (focusing on WiFi ch 1/6/11 NRF ranges) — still ineffective
-
-**Root cause**: WiFi is fundamentally resistant to NRF24L01 jamming because:
-- WiFi channels are **20 MHz wide**, NRF24L01 only covers **~2 MHz** → only 10% overlap
-- WiFi uses OFDM with 52+ subcarriers — can tolerate narrowband interference
-- WiFi TX power (~100-200mW) ≈ NRF PA+LNA power (~100mW) → can't overpower it
-
-### Phase 3: Pivot to BLE Jamming (Success)
-
-BLE is a **perfect target** for the NRF24L01 because:
-- BLE channels are **2 MHz wide** = exact match for NRF24L01 bandwidth → **100% overlap**
-- BLE TX power (1-10mW) vs NRF PA+LNA (100mW) → **10-100× power advantage**
-- BLE has only **3 fixed advertising channels** → trivial to block discovery
-- BLE has only 40 total channels (vs WiFi's effectively continuous 20MHz band)
-
-### Phase 4: Hardware Debugging
-
-After switching to BLE jammer code, both radios reported `begin() = FAIL`. Diagnosis:
-- Cause was **loose breadboard wiring** introduced when removing the toggle switch
-- Fixed by re-wiring directly to ESP32 pins and verifying each connection
-- **Critical lesson**: SPI pins must be explicitly specified in `SPIClass::begin(SCK, MISO, MOSI, SS)` — don't rely on ESP32 defaults
-- Both radios now pass diagnostics
+- restructuring the UI as an operations dashboard
+- introducing a stronger global command-center layout
+- making the signal panel dynamic and continuously updating
+- emphasizing browser-based launch and multi-user readiness
+- clarifying the product narrative as a scalable defense platform
 
 ---
 
-## Final Wiring
+## Why the app now looks like a real product
 
-### NRF24L01+PA+LNA #1 (HSPI)
+A real-world web product is judged by more than a few buttons. It has to communicate trust, system health, operational readiness, and scale. That is why the app now includes:
 
-| NRF24L01 Pin | ESP32 Pin |
-|---|---|
-| VCC | 3.3V (separate supply) |
-| GND | GND (common rail) |
-| CE | GPIO 26 |
-| CSN | GPIO 15 |
-| SCK | GPIO 14 |
-| MOSI | GPIO 13 |
-| MISO | GPIO 12 |
-| IRQ | not connected |
+- a left-side operations panel
+- live working status blocks
+- dynamic spectrum activity
+- incident feed and operator presence
+- deployment-ready command layout
 
-### NRF24L01+PA+LNA #2 (VSPI)
-
-| NRF24L01 Pin | ESP32 Pin |
-|---|---|
-| VCC | 3.3V (separate supply) |
-| GND | GND (common rail) |
-| CE | GPIO 4 |
-| CSN | GPIO 2 |
-| SCK | GPIO 18 |
-| MOSI | GPIO 23 |
-| MISO | GPIO 19 |
-| IRQ | not connected |
-
-### Power Supply
-
-PA+LNA modules draw ~150mA each — too much for ESP32's 3.3V pin. Use a separate 3.3V source (second ESP32's 3.3V pin or AMS1117-3.3 regulator). **All GNDs must connect to the same ground rail.**
-
-```
-Main ESP32 GND ──→ GND rail
-2nd ESP32 GND  ──→ GND rail
-2nd ESP32 3.3V ──→ Power rail (+)
-NRF #1 VCC     ──→ Power rail (+)
-NRF #1 GND     ──→ GND rail
-NRF #2 VCC     ──→ Power rail (+)
-NRF #2 GND     ──→ GND rail
-```
-
-### No toggle switch — jammer starts automatically on boot.
+This makes it feel like a real control interface that could be used by teams in a central operations center.
 
 ---
 
-## How The Jammer Works
+## Dynamic chart approach
 
-### BLE Channel Map
+The spectrum panel is now driven by live state updates instead of static values. It refreshes continuously with generated signal data, which gives the interface the motion and responsiveness expected from modern monitoring dashboards.
 
-```
-BLE Advertising (3 fixed channels — blocked by Radio 1):
-  Ch 37 → 2402 MHz → NRF ch 2
-  Ch 38 → 2426 MHz → NRF ch 26
-  Ch 39 → 2480 MHz → NRF ch 80
-
-BLE Data (37 channels — swept by Radio 2):
-  Ch 0-36 → 2404-2478 MHz → NRF ch 4, 6, 8, ..., 78
-```
-
-### Jamming Strategy
-
-- **Radio 1** cycles through the 3 BLE advertising channels (NRF 2, 26, 80) — this blocks device discovery and new connections
-- **Radio 2** sweeps all 40 BLE channels sequentially — this disrupts active data connections
-- Each radio blasts **9 garbage packets** (3 rounds × 3-deep TX FIFO) per channel before hopping
-- No `Serial.print` in main loop except every 300th iteration to maximize TX duty cycle
-
-### Radio Configuration
-
-- Auto-ACK: disabled (no waiting for responses)
-- Data rate: 2 MBPS (wider bandwidth = more interference)
-- CRC: disabled (minimize packet overhead)
-- Payload: 32 bytes (maximum size)
-- Address width: 3 bytes (minimum, reduces overhead)
-- PA level: MAX with LNA enabled
-- Retries: 0 (fire and forget)
+This makes the app feel active rather than static and helps present the product as a real-time operational system, not just a mock UI.
 
 ---
 
-## Testing Instructions
+## Multi-user and public launch direction
 
-### Quick Test (1 phone, 30 sec)
-1. Jammer OFF → Phone Settings → Bluetooth → Scan → note device list
-2. Jammer ON → Scan again → list should be empty
-3. Jammer OFF → Scan → devices reappear
+For a truly global and shared deployment, a real system should include:
 
-### Full Demo (2 phones, for college presentation)
-1. Install "nRF Connect" or "Serial Bluetooth Terminal" on both phones
-2. Jammer OFF → pair phones, send BLE messages → works ✅
-3. Jammer ON → messages stop, can't discover devices ❌
-4. Jammer OFF → reconnect, messages work again ✅
+1. user authentication and roles
+2. secure cloud hosting
+3. live telemetry and event streams
+4. persistent device and operator history
+5. API endpoints for multiple clients at once
 
-### Serial Monitor Verification (115200 baud)
-Expected output:
-```
-HSPI Radio 1: OK
-VSPI Radio 2: OK
-
-Both radios OK — JAMMING ACTIVE!
-ADV:2 DATA:4  loops/s:XXXX
-```
-- Both "OK" = wiring correct
-- `loops/s` should be in the hundreds/thousands
-- ADV/DATA values should change = radios are hopping
+This project now serves as the front-end foundation for that future architecture.
 
 ---
 
-## Final Working Code
+## Execution model
 
-```cpp
-#include "RF24.h"
-#include <SPI.h>
-#include "esp_bt.h"
-#include "esp_wifi.h"
+The current app is a strong frontend shell for a launch-ready product. It is designed to support:
 
-SPIClass *sp = nullptr;
-SPIClass *hp = nullptr;
+- local demo use
+- browser-based access in a team environment
+- future public deployment through cloud hosting
+- extension into a broader defense or monitoring platform
 
-RF24 radio(26, 15, 16000000);   //NRF24-1 HSPI: CE=26, CSN=15
-RF24 radio1(4, 2, 16000000);    //NRF24-2 VSPI: CE=4,  CSN=2
+---
 
-const int BLE_ADV_CHANNELS[] = {2, 26, 80};
-const int BLE_ALL_CHANNELS[] = {
-   2,  4,  6,  8, 10, 12, 14, 16, 18, 20,
-  22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
-  42, 44, 46, 48, 50, 52, 54, 56, 58, 60,
-  62, 64, 66, 68, 70, 72, 74, 76, 78, 80
-};
-const int NUM_BLE_CHANNELS = 40;
+## Recommended next milestone
 
-const byte junk[32] = {
-  0xAA, 0x55, 0xAA, 0x55, 0xDE, 0xAD, 0xBE, 0xEF,
-  0xFF, 0x00, 0xFF, 0x00, 0xCA, 0xFE, 0xBA, 0xBE,
-  0x13, 0x37, 0x42, 0x69, 0xF0, 0x0F, 0xA5, 0x5A,
-  0xCC, 0x33, 0xCC, 0x33, 0x96, 0x69, 0x3C, 0xC3
-};
+The next step is to add a proper backend and deployment layer:
 
-unsigned long loopCount = 0;
-int dataIdx = 0;
-bool hspiOK = false;
-bool vspiOK = false;
+- API server for shared state
+- authentication for multiple users
+- database for history and events
+- live updates across all connected clients
+- hosted web deployment for global access
 
-void blast(RF24 &r) {
-  for (int round = 0; round < 3; round++) {
-    r.writeFast(&junk, 32);
-    r.writeFast(&junk, 32);
-    r.writeFast(&junk, 32);
-    r.txStandBy();
-  }
-}
+That is the difference between a demo and a platform.
 
-void jam() {
-  if (hspiOK) {
-    int advIdx = loopCount % 3;
-    radio.setChannel(BLE_ADV_CHANNELS[advIdx]);
-    blast(radio);
-  }
-
-  if (vspiOK) {
-    radio1.setChannel(BLE_ALL_CHANNELS[dataIdx]);
-    blast(radio1);
-    dataIdx = (dataIdx + 1) % NUM_BLE_CHANNELS;
-  }
-}
-
-void setup() {
   Serial.begin(115200);
   delay(1000);
 

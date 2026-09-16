@@ -1,17 +1,41 @@
 const ESP32_BASE_URL = 'http://192.168.4.1';
 
-export const getSystemStatus = async () => {
+const readJsonSafely = async (response) => {
+  const contentType = response.headers?.get?.('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  const fallback = await response.text();
+  return fallback ? { message: fallback } : { ok: response.ok };
+};
+
+const fetchWithTimeout = async (url, options = {}, timeoutMs = 1600) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
-    const response = await fetch(`${ESP32_BASE_URL}/api/status`, {
+    const response = await fetch(url, {
+      ...options,
       signal: controller.signal,
     });
+    return response;
+  } finally {
     clearTimeout(timeoutId);
-    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-    return await response.json();
+  }
+};
+
+export const getSystemStatus = async () => {
+  try {
+    const response = await fetchWithTimeout(`${ESP32_BASE_URL}/api/status`);
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}`);
+    }
+
+    return await readJsonSafely(response);
   } catch (error) {
-    console.warn('[Jammer API] Status fetch failed:', error.message);
+    console.warn('[Jammer API] Status fetch failed:', error?.message || error);
     return null;
   }
 };
@@ -22,21 +46,31 @@ export const sendControlCommand = async (action, mode = null) => {
     if (mode !== null) {
       url += `&mode=${mode}`;
     }
-    const response = await fetch(url, { method: 'POST' });
-    return await response.json();
+
+    const response = await fetchWithTimeout(url, { method: 'POST' }, 1800);
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}`);
+    }
+
+    return await readJsonSafely(response);
   } catch (error) {
-    console.error('[Jammer API] Control command failed:', error.message);
+    console.error('[Jammer API] Control command failed:', error?.message || error);
     return null;
   }
 };
 
 export const updateSettings = async (dwellTimeUs, paLevel) => {
   try {
-    let url = `${ESP32_BASE_URL}/api/settings?dwell=${dwellTimeUs}&pa=${paLevel}`;
-    const response = await fetch(url, { method: 'POST' });
-    return await response.json();
+    const url = `${ESP32_BASE_URL}/api/settings?dwell=${dwellTimeUs}&pa=${paLevel}`;
+    const response = await fetchWithTimeout(url, { method: 'POST' }, 1800);
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}`);
+    }
+
+    return await readJsonSafely(response);
   } catch (error) {
-    console.error('[Jammer API] Settings update failed:', error.message);
+    console.error('[Jammer API] Settings update failed:', error?.message || error);
     return null;
   }
 };

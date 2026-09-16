@@ -173,9 +173,9 @@ export default function App() {
   ];
 
   const operators = [
-    { name: 'Ava', role: 'Threat Analyst', status: 'Online' },
-    { name: 'Milo', role: 'Field Ops', status: 'Monitoring' },
-    { name: 'Nia', role: 'Network Guard', status: 'Online' },
+    { name: 'Shree Harsha R', role: 'Threat Analyst', status: 'Online' },
+    { name: 'Arka Sengupta', role: 'Field Ops', status: 'Monitoring' },
+    { name: 'Ajay', role: 'Network Guard', status: 'Online' },
   ];
 
   const handleToggleJamming = async () => {
@@ -383,7 +383,7 @@ export default function App() {
               <Text style={styles.panelTitle}>Operator status</Text>
               {operators.map((person) => (
                 <View key={person.name} style={styles.operatorRow}>
-                  <View style={styles.avatar}>{person.name[0]}</View>
+                        <View style={styles.avatar}><Text style={styles.avatarText}>{person.name[0]}</Text></View>
                   <View style={styles.operatorMeta}>
                     <Text style={styles.operatorName}>{person.name}</Text>
                     <Text style={styles.operatorRole}>{person.role}</Text>
@@ -1277,7 +1277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(219, 230, 205, 0.1)',
+    borderBottomColor: '#eee9f5',
   },
   feedDot: {
     width: 10,
@@ -1296,7 +1296,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   feedLabel: {
-    color: '#f1f3e8',
+    color: '#33243f',
     fontSize: 12,
     marginTop: 2,
   },
@@ -1304,7 +1304,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   feedTime: {
-    color: '#7f8c80',
+    color: '#736b80',
     fontSize: 9,
   },
   feedLevel: {
@@ -1314,43 +1314,46 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   highLevel: {
-    color: '#fca5a5',
+    color: '#be123c',
   },
   normalLevel: {
     color: '#ff8aa1',
   },
   lowLevel: {
-    color: '#aeb8ac',
+    color: '#625c70',
   },
   operatorRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(219, 230, 205, 0.1)',
+    borderBottomColor: '#eee9f5',
   },
   avatar: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#303c2e',
+    backgroundColor: '#5b21b6',
     alignItems: 'center',
     justifyContent: 'center',
-    color: '#fff',
-    fontWeight: '700',
     overflow: 'hidden',
+  },
+  avatarText: {
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 12,
   },
   operatorMeta: {
     flex: 1,
     marginLeft: 10,
   },
   operatorName: {
-    color: '#f1f3e8',
+    color: '#17121f',
     fontWeight: '700',
     fontSize: 12,
   },
   operatorRole: {
-    color: '#7f8c80',
+    color: '#736b80',
     fontSize: 10,
     marginTop: 2,
   },

@@ -44,10 +44,10 @@ Anti-Jammer/
 │   │   ├── components/
 │   │   │   ├── ControlDashboard.jsx
 │   │   │   ├── SettingsPanel.jsx
+│   │   │   ├── SignalArtifact.jsx
 │   │   │   └── SpectrumVisualizer.jsx
 │   │   └── services/
 │   │       └── jammerApi.js
-│   └── dist/
 └── sketch_sep12a/
     └── sketch_sep12a.ino
 ```
@@ -56,12 +56,24 @@ Anti-Jammer/
 
 ## Launching the application
 
-### Local web preview
+### Local web preview (only for your computer)
+
+`localhost` is intentionally local. Other users cannot open your localhost URL. Clone the repository, install the dependencies, and run the preview on their own machine:
 
 ```bash
 cd C:\Users\shree\Desktop\Anti-Jammer\mobile
 npx expo start --web
 ```
+
+For a device on the same network, Expo can provide a LAN URL. For a public URL that anyone can open, deploy the exported `mobile/dist` folder to a static host such as Vercel or Netlify:
+
+```bash
+cd C:\Users\shree\Desktop\Anti-Jammer\mobile
+npm install
+npx expo export --platform web
+```
+
+Then publish the generated `dist` directory. The public web UI will load in demo mode unless the user has a supported connection to the ESP32 hardware.
 
 ### Production-friendly deployment path
 
@@ -72,7 +84,7 @@ For a true public launch, this project should be hosted as a web app with a back
 - cloud database for multi-user telemetry
 - WebSocket or polling layer for real-time updates
 
-This dashboard is structured so it can evolve from a local control panel into a multi-user operations platform without changing the core interface model.
+This dashboard is structured so it can evolve from a local control panel into a multi-user operations platform without changing the core interface model. The current ESP32 API uses the device-local address `192.168.4.1`; a worldwide hardware deployment needs a secure backend or gateway rather than exposing that local address directly.
 
 ---
 

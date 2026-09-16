@@ -212,13 +212,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
       metricValue: {
-    color: '#ffffff',
+        color: '#17121f',
     fontSize: 20,
     fontWeight: '800',
     marginTop: 6,
   },
   sectionTitle: {
-    color: '#ffffff',
+    color: '#17121f',
     fontSize: 16,
     fontWeight: '700',
     marginTop: 18,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modeTitle: {
-    color: '#ffffff',
+    color: '#17121f',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     color: '#ffb3c1',
   },
   modeSubtitle: {
-    color: '#a78bbd',
+    color: '#736b80',
     fontSize: 11,
     marginTop: 3,
     lineHeight: 16,

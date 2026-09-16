@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(88, 226, 255, 0.2)',
   },
   metricValue: {
-    color: '#ffffff',
+    color: '#17121f',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   panelHeading: {
-    color: '#edfaff',
+    color: '#17121f',
     fontSize: 13,
     fontWeight: '800',
     marginTop: 3,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   legendText: {
-    color: '#dce8ff',
+    color: '#625c70',
     fontSize: 10,
   },
   gridContainer: {
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   spectrumFooter: {
-    color: '#9fb0c7',
+    color: '#736b80',
     fontSize: 9,
     textAlign: 'center',
     marginTop: 8,

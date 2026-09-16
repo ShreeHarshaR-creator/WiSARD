@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
   },
   sectionTitle: {
-    color: '#ffffff',
+    color: '#17121f',
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     borderColor: '#d8a7ff',
   },
   chipText: {
-    color: '#eee7f5',
+    color: '#4b3a5f',
     fontSize: 11,
     fontWeight: '700',
   },
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     borderColor: '#ff8aa1',
   },
   paText: {
-    color: '#eee7f5',
+    color: '#4b3a5f',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -150,13 +150,13 @@ const styles = StyleSheet.create({
     borderLeftColor: '#ff5577',
   },
   infoTitle: {
-    color: '#d8a7ff',
+    color: '#5b21b6',
     fontWeight: '700',
     fontSize: 13,
     marginBottom: 6,
   },
   infoText: {
-    color: '#eee7f5',
+    color: '#33243f',
     fontSize: 12,
     marginTop: 2,
   },
